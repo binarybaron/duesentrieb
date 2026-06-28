@@ -345,6 +345,7 @@ export class AuthStorage {
 		if (this.runtimeOverrides.has(provider)) return true;
 		if (this.data[provider]) return true;
 		if (getEnvApiKey(provider)) return true;
+		if (findEnvKeys(provider)) return true;
 		return false;
 	}
 

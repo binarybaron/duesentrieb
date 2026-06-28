@@ -365,7 +365,7 @@ export class AgentSession {
 	}
 
 	private async _getRequiredRequestAuth(model: Model<any>): Promise<{
-		apiKey: string;
+		apiKey?: string;
 		headers?: Record<string, string>;
 		env?: Record<string, string>;
 	}> {
@@ -376,7 +376,7 @@ export class AgentSession {
 			}
 			throw new Error(result.error);
 		}
-		if (result.apiKey) {
+		if (result.apiKey || result.headers) {
 			return { apiKey: result.apiKey, headers: result.headers, env: result.env };
 		}
 
@@ -1922,7 +1922,7 @@ export class AgentSession {
 			let env: Record<string, string> | undefined;
 			if (this.agent.streamFn === streamSimple) {
 				const authResult = await this._modelRegistry.getApiKeyAndHeaders(this.model);
-				if (!authResult.ok || !authResult.apiKey) {
+				if (!authResult.ok || (!authResult.apiKey && !authResult.headers)) {
 					return false;
 				}
 				apiKey = authResult.apiKey;

@@ -1232,6 +1232,116 @@ describe("ModelRegistry", () => {
 	});
 
 	describe("API key resolution", () => {
+		test("resolves Anthropic auth token env as Authorization header", async () => {
+			const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+			const originalOauthToken = process.env.ANTHROPIC_OAUTH_TOKEN;
+			const originalApiKey = process.env.ANTHROPIC_API_KEY;
+			try {
+				process.env.ANTHROPIC_AUTH_TOKEN = "auth-token";
+				delete process.env.ANTHROPIC_OAUTH_TOKEN;
+				delete process.env.ANTHROPIC_API_KEY;
+
+				const registry = ModelRegistry.create(authStorage, modelsJsonPath);
+				const model = getModelsForProvider(registry, "anthropic")[0];
+
+				expect(registry.getAvailable()).toContain(model);
+				expect(await registry.getApiKeyAndHeaders(model)).toEqual({
+					ok: true,
+					headers: { Authorization: "Bearer auth-token" },
+				});
+			} finally {
+				if (originalAuthToken === undefined) {
+					delete process.env.ANTHROPIC_AUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+				}
+				if (originalOauthToken === undefined) {
+					delete process.env.ANTHROPIC_OAUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_OAUTH_TOKEN = originalOauthToken;
+				}
+				if (originalApiKey === undefined) {
+					delete process.env.ANTHROPIC_API_KEY;
+				} else {
+					process.env.ANTHROPIC_API_KEY = originalApiKey;
+				}
+			}
+		});
+
+		test("resolves Anthropic OAuth token env as Authorization header", async () => {
+			const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+			const originalOauthToken = process.env.ANTHROPIC_OAUTH_TOKEN;
+			const originalApiKey = process.env.ANTHROPIC_API_KEY;
+			try {
+				delete process.env.ANTHROPIC_AUTH_TOKEN;
+				process.env.ANTHROPIC_OAUTH_TOKEN = "oauth-token";
+				delete process.env.ANTHROPIC_API_KEY;
+
+				const registry = ModelRegistry.create(authStorage, modelsJsonPath);
+				const model = getModelsForProvider(registry, "anthropic")[0];
+
+				expect(registry.getAvailable()).toContain(model);
+				expect(await registry.getApiKeyAndHeaders(model)).toEqual({
+					ok: true,
+					headers: { Authorization: "Bearer oauth-token" },
+				});
+			} finally {
+				if (originalAuthToken === undefined) {
+					delete process.env.ANTHROPIC_AUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+				}
+				if (originalOauthToken === undefined) {
+					delete process.env.ANTHROPIC_OAUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_OAUTH_TOKEN = originalOauthToken;
+				}
+				if (originalApiKey === undefined) {
+					delete process.env.ANTHROPIC_API_KEY;
+				} else {
+					process.env.ANTHROPIC_API_KEY = originalApiKey;
+				}
+			}
+		});
+
+		test("does not let Anthropic auth token env override configured auth headers", async () => {
+			const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+			const originalOauthToken = process.env.ANTHROPIC_OAUTH_TOKEN;
+			const originalApiKey = process.env.ANTHROPIC_API_KEY;
+			try {
+				process.env.ANTHROPIC_AUTH_TOKEN = "auth-token";
+				delete process.env.ANTHROPIC_OAUTH_TOKEN;
+				delete process.env.ANTHROPIC_API_KEY;
+				writeRawModelsJson({
+					anthropic: { headers: { "x-api-key": "configured-header-key" } },
+				});
+
+				const registry = ModelRegistry.create(authStorage, modelsJsonPath);
+				const model = getModelsForProvider(registry, "anthropic")[0];
+
+				expect(await registry.getApiKeyAndHeaders(model)).toEqual({
+					ok: true,
+					headers: { "x-api-key": "configured-header-key" },
+				});
+			} finally {
+				if (originalAuthToken === undefined) {
+					delete process.env.ANTHROPIC_AUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+				}
+				if (originalOauthToken === undefined) {
+					delete process.env.ANTHROPIC_OAUTH_TOKEN;
+				} else {
+					process.env.ANTHROPIC_OAUTH_TOKEN = originalOauthToken;
+				}
+				if (originalApiKey === undefined) {
+					delete process.env.ANTHROPIC_API_KEY;
+				} else {
+					process.env.ANTHROPIC_API_KEY = originalApiKey;
+				}
+			}
+		});
+
 		/** Create provider config with custom apiKey */
 		function providerWithApiKey(apiKey: string) {
 			return {

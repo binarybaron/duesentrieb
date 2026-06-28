@@ -65,8 +65,8 @@ export interface CollectEntriesResult {
 export interface GenerateBranchSummaryOptions {
 	/** Model to use for summarization */
 	model: Model<any>;
-	/** API key for the model */
-	apiKey: string;
+	/** API key for the model, when the provider uses API-key auth. */
+	apiKey?: string;
 	/** Request headers for the model */
 	headers?: Record<string, string>;
 	/** Provider-scoped environment values for the model */

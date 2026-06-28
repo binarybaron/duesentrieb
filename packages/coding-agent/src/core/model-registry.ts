@@ -3,6 +3,8 @@
  */
 
 import {
+	ANTHROPIC_AUTH_TOKEN_ENV,
+	ANTHROPIC_OAUTH_TOKEN_ENV,
 	type AnthropicMessagesCompat,
 	type Api,
 	type AssistantMessageEventStream,
@@ -257,6 +259,26 @@ export type ResolvedRequestAuth =
 			ok: false;
 			error: string;
 	  };
+
+function hasAuthHeader(headers: Record<string, string> | undefined): boolean {
+	if (!headers) return false;
+	for (const key of Object.keys(headers)) {
+		const lower = key.toLowerCase();
+		if (lower === "authorization" || lower === "x-api-key" || lower === "cf-aig-authorization") return true;
+	}
+	return false;
+}
+
+function getAnthropicBearerToken(provider: string, env: Record<string, string> | undefined): string | undefined {
+	if (provider !== "anthropic") return undefined;
+	return (
+		env?.[ANTHROPIC_AUTH_TOKEN_ENV] ||
+		env?.[ANTHROPIC_OAUTH_TOKEN_ENV] ||
+		process.env[ANTHROPIC_AUTH_TOKEN_ENV] ||
+		process.env[ANTHROPIC_OAUTH_TOKEN_ENV] ||
+		undefined
+	);
+}
 
 /** Result of loading custom models from models.json */
 interface CustomModelsResult {
@@ -724,10 +746,15 @@ export class ModelRegistry {
 				providerEnv,
 			);
 
-			let headers =
+			const explicitHeaders =
 				model.headers || providerHeaders || modelHeaders
 					? { ...model.headers, ...providerHeaders, ...modelHeaders }
 					: undefined;
+			const bearerToken =
+				apiKey || hasAuthHeader(explicitHeaders) ? undefined : getAnthropicBearerToken(model.provider, providerEnv);
+			const bearerTokenHeaders = bearerToken ? { Authorization: `Bearer ${bearerToken}` } : undefined;
+			let headers =
+				explicitHeaders || bearerTokenHeaders ? { ...explicitHeaders, ...bearerTokenHeaders } : undefined;
 
 			if (providerConfig?.authHeader) {
 				if (!apiKey) {
