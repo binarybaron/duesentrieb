@@ -125,7 +125,7 @@ describe("FooterComponent width handling", () => {
 		}
 	});
 
-	it("shows the latest cache hit rate when cache usage is present", () => {
+	it("shows only input, output, and compact context usage on the left", () => {
 		const session = createSession({
 			sessionName: "",
 			usage: {
@@ -139,6 +139,10 @@ describe("FooterComponent width handling", () => {
 		const footer = new FooterComponent(session, createFooterData(1));
 
 		const statsLine = stripAnsi(footer.render(120)[1]);
-		expect(statsLine).toContain("CH25.0%");
+		expect(statsLine).toContain("↑100 ↓10 12.3% (200k)");
+		expect(statsLine).not.toContain("R50");
+		expect(statsLine).not.toContain("CH");
+		expect(statsLine).not.toContain("$0.001");
+		expect(statsLine).not.toContain("auto");
 	});
 });
