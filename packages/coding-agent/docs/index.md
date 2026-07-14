@@ -42,6 +42,7 @@ For the full first-run flow, see [Quickstart](quickstart.md).
 - [Using Pi](usage.md) - interactive mode, slash commands, context files, and CLI reference.
 - [Providers](providers.md) - subscription and API-key setup for built-in providers.
 - [Security](security.md) - project trust, sandbox boundaries, and vulnerability reporting.
+- [Tool permissions](permissions.md) - manual, automatic, and unrestricted tool execution modes.
 - [Containerization](containerization.md) - sandbox pi with Gondolin, Docker, or OpenShell.
 - [Settings](settings.md) - global and project settings.
 - [Keybindings](keybindings.md) - default shortcuts and custom keybindings.
