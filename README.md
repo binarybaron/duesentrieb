@@ -23,6 +23,19 @@ To learn more about Pi:
 * [Visit pi.dev](https://pi.dev), the project website with demos
 * [Read the documentation](https://pi.dev/docs/latest), but you can also ask the agent to explain itself
 
+## Install (this fork)
+
+Install the prebuilt binary from this fork's GitHub Releases:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/binarybaron/duesentrieb/main/install.sh | sh
+```
+
+The installer detects your platform (macOS/Linux, x64/arm64), verifies the release
+checksum, unpacks into `~/.local/share/duesentrieb`, and symlinks `pi` into
+`~/.local/bin`. Override with `PI_VERSION`, `PI_INSTALL_DIR`, or `PI_BIN_DIR`.
+Windows: download the zip from the [releases page](https://github.com/binarybaron/duesentrieb/releases).
+
 ## All Packages
 
 | Package | Description |
