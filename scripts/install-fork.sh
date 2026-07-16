@@ -72,13 +72,15 @@ rm "$stage_dir"/*.tgz
 
 target_dir="$install_prefix/lib/pi-fork"
 target_bin="$install_prefix/bin/pi"
+alias_bin="$install_prefix/bin/dusentrieb"
 
 install_files() {
     mkdir -p "$install_prefix/lib" "$install_prefix/bin"
     rm -rf "$target_dir"
     cp -R "$stage_dir" "$target_dir"
-    rm -f "$target_bin"
+    rm -f "$target_bin" "$alias_bin"
     ln -s "../lib/pi-fork/node_modules/.bin/pi" "$target_bin"
+    ln -s "../lib/pi-fork/node_modules/.bin/pi" "$alias_bin"
 }
 
 if [[ (-d "$install_prefix" && -w "$install_prefix") || (! -e "$install_prefix" && -w "$(dirname "$install_prefix")") ]]; then
@@ -87,8 +89,9 @@ elif command -v sudo >/dev/null 2>&1; then
     sudo mkdir -p "$install_prefix/lib" "$install_prefix/bin"
     sudo rm -rf "$target_dir"
     sudo cp -R "$stage_dir" "$target_dir"
-    sudo rm -f "$target_bin"
+    sudo rm -f "$target_bin" "$alias_bin"
     sudo ln -s "../lib/pi-fork/node_modules/.bin/pi" "$target_bin"
+    sudo ln -s "../lib/pi-fork/node_modules/.bin/pi" "$alias_bin"
 else
     echo "Cannot write to $install_prefix and sudo is unavailable." >&2
     echo "Set PI_INSTALL_PREFIX to a writable prefix on PATH." >&2
@@ -97,3 +100,4 @@ fi
 
 "$target_bin" --version
 echo "Installed fork: $target_bin"
+echo "Installed alias: $alias_bin"
