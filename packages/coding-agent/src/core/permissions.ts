@@ -51,10 +51,21 @@ function waitForRetry(attempt: number, signal?: AbortSignal): Promise<void> {
 	});
 }
 
+function extractClassifierJson(text: string): string {
+	const trimmed = text.trim();
+	const fenced = /^```[a-z]*\s*\n?([\s\S]*?)\n?\s*```$/.exec(trimmed);
+	const body = (fenced ? fenced[1] : trimmed).trim();
+	if (body.startsWith("{")) return body;
+	const start = body.indexOf("{");
+	const end = body.lastIndexOf("}");
+	if (start !== -1 && end > start) return body.slice(start, end + 1);
+	return body;
+}
+
 export function parseClassifierResult(text: string): ClassifierResult {
 	let value: unknown;
 	try {
-		value = JSON.parse(text.trim());
+		value = JSON.parse(extractClassifierJson(text));
 	} catch {
 		throw new Error("Classifier returned invalid JSON");
 	}

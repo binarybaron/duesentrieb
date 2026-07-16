@@ -19,6 +19,15 @@ describe("parseClassifierResult", () => {
 		expect(() => parseClassifierResult('{"approved":false}')).toThrow();
 		expect(() => parseClassifierResult("```json\n{}\n```")).toThrow();
 	});
+
+	it("tolerates markdown fences and surrounding prose around a valid object", () => {
+		expect(parseClassifierResult('```json\n{"approved":true}\n```')).toEqual({ approved: true });
+		expect(parseClassifierResult('```\n{"approved":false,"reason":"too broad"}\n```')).toEqual({
+			approved: false,
+			reason: "too broad",
+		});
+		expect(parseClassifierResult('Here is my decision:\n{"approved":true}')).toEqual({ approved: true });
+	});
 });
 
 describe("PermissionController", () => {
