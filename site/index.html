@@ -3,108 +3,175 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Duesentrieb — a Pi coding agent fork</title>
-	<meta name="description" content="Duesentrieb is a fork of the Pi agent harness: an interactive coding agent CLI with extra permission modes, Zellij integration, and background open questions.">
+	<title>Duesentrieb</title>
+	<meta name="description" content="Duesentrieb is a friendly fork of the Pi agent harness — a coding agent for your terminal.">
 	<style>
 		:root {
-			--bg: #ffffff;
-			--fg: #1a1a1a;
-			--muted: #6b6b6b;
-			--accent: #4f46e5;
-			--code-bg: #f4f4f5;
-			--border: #e4e4e7;
+			--outer-bg: linear-gradient(180deg, #a7cfdf 0%, #d8e9f0 100%);
+			--card-bg: #fdfdfd;
+			--fg: #24292f;
+			--muted: #57606a;
+			--panel: rgba(238, 238, 250, 0.65);
+			--border: #d0d7de;
+			--term-bg: #17242b;
+			--term-fg: #d6e4ea;
+			--accent: #2a7ba0;
 		}
 		@media (prefers-color-scheme: dark) {
 			:root {
-				--bg: #101014;
-				--fg: #ececf0;
-				--muted: #9a9aa3;
-				--accent: #8b85f5;
-				--code-bg: #1b1b22;
-				--border: #2a2a33;
+				--outer-bg: linear-gradient(180deg, #16222a 0%, #0e141a 100%);
+				--card-bg: #14181d;
+				--fg: #e6edf3;
+				--muted: #9aa7b1;
+				--panel: rgba(32, 32, 40, 0.6);
+				--border: #2d333b;
+				--term-bg: #0b1216;
+				--term-fg: #cfe0e8;
+				--accent: #7cc4e8;
 			}
 		}
 		* { box-sizing: border-box; margin: 0; }
 		body {
-			background: var(--bg);
+			background: var(--outer-bg);
+			background-attachment: fixed;
 			color: var(--fg);
-			font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-			line-height: 1.6;
-		}
-		main { max-width: 42rem; margin: 0 auto; padding: 4rem 1.25rem 5rem; }
-		.mark { font-size: 3.5rem; line-height: 1; }
-		h1 { font-size: 2.25rem; margin: 0.75rem 0 0.25rem; letter-spacing: -0.02em; }
-		.tagline { color: var(--muted); font-size: 1.125rem; margin-bottom: 2.5rem; }
-		h2 { font-size: 1.25rem; margin: 2.5rem 0 0.75rem; }
-		p { margin: 0.5rem 0; }
-		a { color: var(--accent); }
-		pre {
-			background: var(--code-bg);
-			border: 1px solid var(--border);
-			border-radius: 8px;
+			font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+			line-height: 1.55;
 			padding: 1rem;
-			overflow-x: auto;
-			font-size: 0.9rem;
 		}
-		code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-		p > code, li > code {
-			background: var(--code-bg);
-			border-radius: 4px;
-			padding: 0.1em 0.35em;
-			font-size: 0.9em;
+		.card {
+			max-width: 52rem;
+			margin: 1.5rem auto;
+			background: var(--card-bg);
+			border-radius: 14px;
+			box-shadow: 0 6px 30px rgba(0, 0, 40, 0.25);
+			padding: 2rem clamp(1rem, 4vw, 3rem) 2.5rem;
+			text-align: center;
 		}
-		ul { padding-left: 1.25rem; }
-		li { margin: 0.35rem 0; }
-		.note {
-			border-left: 3px solid var(--accent);
-			padding: 0.25rem 0 0.25rem 1rem;
-			color: var(--muted);
+		.logo {
+			display: inline-block;
+			background: var(--term-bg);
+			color: #7ee787;
+			font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+			font-size: 2.5rem;
+			line-height: 1;
+			padding: 1rem 1.4rem;
+			border-radius: 12px;
+			margin-top: 0.5rem;
+		}
+		.jumbotron {
+			background: var(--panel);
+			border-radius: 14px;
+			padding: 1.75rem 1.5rem;
 			margin: 1.5rem 0;
 		}
-		footer { margin-top: 4rem; color: var(--muted); font-size: 0.875rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+		.jumbotron h1 { font-size: clamp(1.6rem, 5vw, 2.6rem); letter-spacing: -0.02em; }
+		.lead { font-size: 1.15rem; color: var(--muted); margin-top: 0.75rem; }
+		hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+		h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+		.promos {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+			gap: 1.5rem;
+			text-align: left;
+		}
+		.promo h3 { font-size: 1.05rem; margin-bottom: 0.5rem; text-align: center; }
+		.promo p { font-size: 0.95rem; color: var(--muted); }
+		pre.term {
+			background: var(--term-bg);
+			color: var(--term-fg);
+			border-radius: 8px;
+			padding: 0.75rem;
+			font-size: 0.78rem;
+			overflow-x: auto;
+			margin-bottom: 0.6rem;
+			text-align: left;
+			line-height: 1.5;
+		}
+		pre.term .p { color: #7ee787; }
+		pre.term .d { color: #8b949e; }
+		code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+		.btn {
+			display: inline-block;
+			margin: 0.25rem;
+			padding: 0.55rem 1.3rem;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			background-image: linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(0,0,0,0.06));
+			color: var(--fg);
+			text-decoration: none;
+			font-weight: 600;
+		}
+		.btn:hover { border-color: var(--accent); color: var(--accent); }
+		.download {
+			text-align: left;
+			max-width: 34rem;
+			margin: 0 auto;
+		}
+		.download p { margin: 0.5rem 0; }
+		a { color: var(--accent); }
+		footer { color: var(--muted); font-size: 0.85rem; margin-top: 2rem; }
 	</style>
 </head>
 <body>
-	<main>
-		<div class="mark">π</div>
-		<h1>Duesentrieb</h1>
-		<p class="tagline">A fork of the <a href="https://github.com/earendil-works/pi">Pi agent harness</a> — an interactive, self-extensible coding agent for your terminal.</p>
+	<div class="card">
+		<div class="logo">π_</div>
 
-		<h2>What the fork adds</h2>
-		<ul>
-			<li><strong>Permission modes</strong> — manual, read-only, and auto (read-only) modes with an LLM permission classifier.</li>
-			<li><strong>Open questions</strong> — a background model collects non-urgent questions during a session; review and answer them anytime with <code>/open-questions</code>.</li>
-			<li><strong>Zellij integration</strong> — session forks open in Zellij panes.</li>
-			<li><strong>Subagents</strong> — subagents inherit the parent session's permissions.</li>
-			<li><strong>Skill discovery</strong> — picks up Claude project skills automatically.</li>
-			<li><strong>No telemetry</strong> — telemetry is disabled entirely.</li>
-		</ul>
-
-		<h2>Install</h2>
-		<p>Requires <a href="https://nodejs.org">Node.js</a> ≥ 22.19 and git.</p>
-		<pre><code>git clone https://github.com/binarybaron/duesentrieb
-cd duesentrieb
-npm install --ignore-scripts
-./scripts/install-fork.sh</code></pre>
-		<p>This builds all packages and installs the <code>pi</code> command to <code>~/.local/bin</code> (or over an existing <code>pi</code> install). Then just run:</p>
-		<pre><code>pi</code></pre>
-
-		<div class="note">
-			Prefer the unmodified upstream? Install it with
-			<code>npm install -g @earendil-works/pi-coding-agent</code> or visit <a href="https://pi.dev">pi.dev</a>.
+		<div class="jumbotron">
+			<h1>Finally, a coding agent for the 90s</h1>
+			<p class="lead">
+				Duesentrieb is a friendly fork of the <a href="https://github.com/earendil-works/pi">Pi agent harness</a> —
+				a self-extensible coding agent that lives in your terminal, where you already were anyway.
+			</p>
 		</div>
 
-		<h2>Links</h2>
-		<ul>
-			<li><a href="https://github.com/binarybaron/duesentrieb">Source code on GitHub</a></li>
-			<li><a href="https://github.com/earendil-works/pi">Upstream Pi project</a></li>
-			<li><a href="https://pi.dev/docs/latest">Pi documentation</a></li>
-		</ul>
+		<hr>
+
+		<div class="promos">
+			<div class="promo">
+				<h3>Asks Before It Wrecks</h3>
+				<pre class="term"><span class="p">&gt;</span> /permissions
+<span class="d">Permission mode: auto (read only)</span></pre>
+				<p>Manual, read-only, and auto modes with an LLM classifier deciding what's safe. Your <code>rm -rf</code> anxiety, outsourced.</p>
+			</div>
+			<div class="promo">
+				<h3>Holds Its Questions</h3>
+				<pre class="term"><span class="p">&gt;</span> /open-questions
+<span class="d">2 open questions collected</span></pre>
+				<p>A background model collects non-urgent questions while you work. Answer them when you feel like it, not when a modal says so.</p>
+			</div>
+			<div class="promo">
+				<h3>Forks Like It Means It</h3>
+				<pre class="term"><span class="p">&gt;</span> /fork
+<span class="d">Opened fork in Zellij pane</span></pre>
+				<p>Session forks open in Zellij panes. Subagents inherit your permissions. Telemetry was removed entirely, because obviously.</p>
+			</div>
+		</div>
+
+		<hr>
+
+		<h2>Teach me to pi</h2>
+		<a class="btn" href="https://pi.dev/docs/latest">Documentation</a>
+		<a class="btn" href="https://github.com/binarybaron/duesentrieb">Source</a>
+		<a class="btn" href="https://github.com/earendil-works/pi">Upstream</a>
+
+		<hr>
+
+		<h2>Go get it</h2>
+		<div class="download">
+			<p>Requires <a href="https://nodejs.org">Node.js</a> ≥ 22.19 and git:</p>
+			<pre class="term"><span class="p">&gt;</span> git clone https://github.com/binarybaron/duesentrieb
+<span class="p">&gt;</span> cd duesentrieb
+<span class="p">&gt;</span> npm install --ignore-scripts
+<span class="p">&gt;</span> ./scripts/install-fork.sh
+<span class="d">Installed fork: ~/.local/bin/pi</span></pre>
+			<p>Then run <code>pi</code>. Prefer unmodified upstream? <code>npm install -g @earendil-works/pi-coding-agent</code> or visit <a href="https://pi.dev">pi.dev</a>.</p>
+		</div>
 
 		<footer>
-			Duesentrieb is an independent fork and is not affiliated with the upstream Pi project or pi.dev.
+			An independent fork, not affiliated with the upstream Pi project, pi.dev, or fishshell.com (whose website we lovingly imitated).
 			Licensed under the same terms as upstream — see <a href="https://github.com/binarybaron/duesentrieb/blob/main/LICENSE">LICENSE</a>.
 		</footer>
-	</main>
+	</div>
 </body>
 </html>
