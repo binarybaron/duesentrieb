@@ -2686,6 +2686,11 @@ export class InteractiveMode {
 				this.editor.setText("");
 				return;
 			}
+			if (text === "/open-questions") {
+				this.editor.setText("");
+				await this.handleOpenQuestionsCommand();
+				return;
+			}
 			if (text === "/changelog") {
 				this.handleChangelogCommand();
 				this.editor.setText("");
@@ -3039,6 +3044,12 @@ export class InteractiveMode {
 				this.pendingTools.clear();
 
 				this.ui.requestRender();
+				void this.session.collectOpenQuestions().then((added) => {
+					if (added > 0) {
+						const label = added === 1 ? "open question" : "open questions";
+						this.showStatus(`${added} new ${label} — review with /open-questions`);
+					}
+				});
 				break;
 
 			case "agent_settled":
@@ -5755,6 +5766,52 @@ export class InteractiveMode {
 		this.chatContainer.addChild(new Spacer(1));
 		this.chatContainer.addChild(new Text(info, 1, 0));
 		this.ui.requestRender();
+	}
+
+	private async handleOpenQuestionsCommand(): Promise<void> {
+		const questions = this.session.openQuestions.list();
+		if (questions.length === 0) {
+			this.showStatus("No open questions collected yet");
+			return;
+		}
+
+		const selectedLabel = await this.showExtensionSelector(
+			`Open questions (${questions.length})`,
+			questions.map((question) => question.question),
+		);
+		if (selectedLabel === undefined) return;
+		const question = questions.find((entry) => entry.question === selectedLabel);
+		if (!question) return;
+
+		const customOption = "Write a custom response…";
+		const discardOption = "Discard this question";
+		const choice = await this.showExtensionSelector(question.question, [
+			...question.options,
+			customOption,
+			discardOption,
+		]);
+		if (choice === undefined) return;
+
+		if (choice === discardOption) {
+			this.session.openQuestions.remove(question.id);
+			this.showStatus("Open question discarded");
+			return;
+		}
+
+		let answer = choice;
+		if (choice === customOption) {
+			const custom = await this.showExtensionInput(question.question, "Type your answer");
+			if (!custom?.trim()) return;
+			answer = custom.trim();
+		}
+
+		this.session.openQuestions.remove(question.id);
+		const inject = await this.showExtensionConfirm("Inject into current chat?", `${question.question} → ${answer}`);
+		if (inject) {
+			await this.defaultEditor.onSubmit?.(`Answering your open question "${question.question}": ${answer}`);
+		} else {
+			this.showStatus("Question resolved without injecting the answer into the chat");
+		}
 	}
 
 	private handleChangelogCommand(): void {

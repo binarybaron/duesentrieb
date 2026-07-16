@@ -90,6 +90,12 @@ import {
 } from "./messages.ts";
 import type { ModelRegistry } from "./model-registry.ts";
 import {
+	buildOpenQuestionsSystemPrompt,
+	MAX_OPEN_QUESTIONS,
+	OpenQuestionStore,
+	parseOpenQuestions,
+} from "./open-questions.ts";
+import {
 	PermissionController,
 	type PermissionMode,
 	type PermissionRequest,
@@ -360,6 +366,10 @@ export class AgentSession {
 	private _permissionUserMessages: string[] = [];
 	private _activeToolNamesBeforeReadOnly: string[] | undefined;
 
+	// Open questions collected by a background model call
+	readonly openQuestions = new OpenQuestionStore();
+	private _collectingOpenQuestions = false;
+
 	// Model registry for API key resolution
 	private _modelRegistry: ModelRegistry;
 
@@ -506,6 +516,70 @@ ${JSON.stringify({
 			.join("")
 			.trim();
 		return parseClassifierResult(text);
+	}
+
+	/**
+	 * Background pass that extracts open questions from the recent conversation.
+	 * Never throws and never blocks the session flow. Returns the number of
+	 * newly collected questions.
+	 */
+	async collectOpenQuestions(): Promise<number> {
+		if (this._collectingOpenQuestions) return 0;
+		if (this.openQuestions.size >= MAX_OPEN_QUESTIONS) return 0;
+		const model = this.model;
+		if (!model) return 0;
+		const transcript = this._serializeRecentConversation();
+		if (!transcript) return 0;
+
+		this._collectingOpenQuestions = true;
+		try {
+			const systemPrompt = buildOpenQuestionsSystemPrompt(this.openQuestions.list().map((q) => q.question));
+			const messages: Message[] = [
+				{
+					role: "user",
+					content: [{ type: "text", text: `Recent conversation:\n\n${transcript}` }],
+					timestamp: Date.now(),
+				},
+			];
+			const auth = await this._getRequiredRequestAuth(model);
+			const stream = streamSimple(model, { systemPrompt, messages }, { ...auth, maxRetries: 0 });
+			const response = await stream.result();
+			if (response.stopReason === "error" || response.stopReason === "aborted") return 0;
+			const text = response.content
+				.filter((content) => content.type === "text")
+				.map((content) => content.text)
+				.join("")
+				.trim();
+			let added = 0;
+			for (const { question, options } of parseOpenQuestions(text)) {
+				if (this.openQuestions.add(question, options)) added++;
+			}
+			return added;
+		} catch {
+			return 0;
+		} finally {
+			this._collectingOpenQuestions = false;
+		}
+	}
+
+	private _serializeRecentConversation(maxMessages = 20, maxCharsPerMessage = 2000): string {
+		const parts: string[] = [];
+		for (const message of this.agent.state.messages) {
+			if (message.role !== "user" && message.role !== "assistant") continue;
+			const text =
+				typeof message.content === "string"
+					? message.content
+					: message.content
+							.filter((content): content is TextContent => content.type === "text")
+							.map((content) => content.text)
+							.join("\n");
+			if (!text.trim() || text.startsWith(COMPACTION_SUMMARY_PREFIX) || text.startsWith(BRANCH_SUMMARY_PREFIX)) {
+				continue;
+			}
+			const truncated = text.length > maxCharsPerMessage ? `${text.slice(0, maxCharsPerMessage)}…` : text;
+			parts.push(`${message.role === "user" ? "User" : "Assistant"}: ${truncated}`);
+		}
+		return parts.slice(-maxMessages).join("\n\n");
 	}
 
 	private _getEffectiveSystemPrompt(): string {
