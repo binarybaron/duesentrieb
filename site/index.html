@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Duesentrieb — a Pi coding agent fork</title>
+	<meta name="description" content="Duesentrieb is a fork of the Pi agent harness: an interactive coding agent CLI with extra permission modes, Zellij integration, and background open questions.">
+	<style>
+		:root {
+			--bg: #ffffff;
+			--fg: #1a1a1a;
+			--muted: #6b6b6b;
+			--accent: #4f46e5;
+			--code-bg: #f4f4f5;
+			--border: #e4e4e7;
+		}
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--bg: #101014;
+				--fg: #ececf0;
+				--muted: #9a9aa3;
+				--accent: #8b85f5;
+				--code-bg: #1b1b22;
+				--border: #2a2a33;
+			}
+		}
+		* { box-sizing: border-box; margin: 0; }
+		body {
+			background: var(--bg);
+			color: var(--fg);
+			font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+			line-height: 1.6;
+		}
+		main { max-width: 42rem; margin: 0 auto; padding: 4rem 1.25rem 5rem; }
+		.mark { font-size: 3.5rem; line-height: 1; }
+		h1 { font-size: 2.25rem; margin: 0.75rem 0 0.25rem; letter-spacing: -0.02em; }
+		.tagline { color: var(--muted); font-size: 1.125rem; margin-bottom: 2.5rem; }
+		h2 { font-size: 1.25rem; margin: 2.5rem 0 0.75rem; }
+		p { margin: 0.5rem 0; }
+		a { color: var(--accent); }
+		pre {
+			background: var(--code-bg);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			padding: 1rem;
+			overflow-x: auto;
+			font-size: 0.9rem;
+		}
+		code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+		p > code, li > code {
+			background: var(--code-bg);
+			border-radius: 4px;
+			padding: 0.1em 0.35em;
+			font-size: 0.9em;
+		}
+		ul { padding-left: 1.25rem; }
+		li { margin: 0.35rem 0; }
+		.note {
+			border-left: 3px solid var(--accent);
+			padding: 0.25rem 0 0.25rem 1rem;
+			color: var(--muted);
+			margin: 1.5rem 0;
+		}
+		footer { margin-top: 4rem; color: var(--muted); font-size: 0.875rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+	</style>
+</head>
+<body>
+	<main>
+		<div class="mark">π</div>
+		<h1>Duesentrieb</h1>
+		<p class="tagline">A fork of the <a href="https://github.com/earendil-works/pi">Pi agent harness</a> — an interactive, self-extensible coding agent for your terminal.</p>
+
+		<h2>What the fork adds</h2>
+		<ul>
+			<li><strong>Permission modes</strong> — manual, read-only, and auto (read-only) modes with an LLM permission classifier.</li>
+			<li><strong>Open questions</strong> — a background model collects non-urgent questions during a session; review and answer them anytime with <code>/open-questions</code>.</li>
+			<li><strong>Zellij integration</strong> — session forks open in Zellij panes.</li>
+			<li><strong>Subagents</strong> — subagents inherit the parent session's permissions.</li>
+			<li><strong>Skill discovery</strong> — picks up Claude project skills automatically.</li>
+			<li><strong>No telemetry</strong> — telemetry is disabled entirely.</li>
+		</ul>
+
+		<h2>Install</h2>
+		<p>Requires <a href="https://nodejs.org">Node.js</a> ≥ 22.19 and git.</p>
+		<pre><code>git clone https://github.com/binarybaron/duesentrieb
+cd duesentrieb
+npm install --ignore-scripts
+./scripts/install-fork.sh</code></pre>
+		<p>This builds all packages and installs the <code>pi</code> command to <code>~/.local/bin</code> (or over an existing <code>pi</code> install). Then just run:</p>
+		<pre><code>pi</code></pre>
+
+		<div class="note">
+			Prefer the unmodified upstream? Install it with
+			<code>npm install -g @earendil-works/pi-coding-agent</code> or visit <a href="https://pi.dev">pi.dev</a>.
+		</div>
+
+		<h2>Links</h2>
+		<ul>
+			<li><a href="https://github.com/binarybaron/duesentrieb">Source code on GitHub</a></li>
+			<li><a href="https://github.com/earendil-works/pi">Upstream Pi project</a></li>
+			<li><a href="https://pi.dev/docs/latest">Pi documentation</a></li>
+		</ul>
+
+		<footer>
+			Duesentrieb is an independent fork and is not affiliated with the upstream Pi project or pi.dev.
+			Licensed under the same terms as upstream — see <a href="https://github.com/binarybaron/duesentrieb/blob/main/LICENSE">LICENSE</a>.
+		</footer>
+	</main>
+</body>
+</html>
