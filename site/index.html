@@ -172,6 +172,19 @@
 			box-shadow: 0 6px 18px var(--glow);
 			color: var(--accent);
 		}
+		.spotlight {
+			display: grid;
+			grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+			gap: 2.5rem;
+			align-items: center;
+			text-align: left;
+		}
+		.spotlight .term { margin-bottom: 0; }
+		.spotlight-copy p { margin: 0 0 1rem; color: var(--muted); font-size: 1rem; }
+		.spotlight-copy p:last-child { margin-bottom: 0; }
+		@media (max-width: 46rem) {
+			.spotlight { grid-template-columns: 1fr; }
+		}
 		.download {
 			text-align: left;
 			max-width: 38rem;
@@ -212,15 +225,6 @@
 				<p>Manual, read-only, and auto modes with an LLM classifier deciding what's safe. Your <code>rm -rf</code> anxiety, outsourced.</p>
 			</div>
 			<div class="promo">
-				<h3>Holds Its Questions</h3>
-				<div class="term">
-					<div class="tbar"><i></i><i></i><i></i><span>open questions</span></div>
-					<pre><span class="p">&gt;</span> /open-questions
-<span class="d">2 open questions collected</span></pre>
-				</div>
-				<p>A background model collects non-urgent questions while you work. Answer them when you feel like it, not when a modal says so.</p>
-			</div>
-			<div class="promo">
 				<h3>Forks Like It Means It</h3>
 				<div class="term">
 					<div class="tbar"><i></i><i></i><i></i><span>zellij</span></div>
@@ -228,6 +232,53 @@
 <span class="d">Opened fork in Zellij pane</span></pre>
 				</div>
 				<p>Session forks open in Zellij panes. Subagents inherit your permissions. Telemetry was removed entirely, because obviously.</p>
+			</div>
+		</div>
+
+		<hr>
+
+		<h2>Holds its questions</h2>
+		<div class="spotlight">
+			<div class="term">
+				<div class="tbar"><i></i><i></i><i></i><span>open questions</span></div>
+				<pre><span class="d">2 new open questions — review with /open-questions</span>
+
+<span class="p">&gt;</span> /open-questions
+
+<span class="d">Open questions (2)</span>
+<span class="p">●</span> How should errors generally be surfaced in this CLI?
+  Which testing depth do you want for new features?
+
+<span class="d">How should errors generally be surfaced in this CLI?</span>
+  Status line only
+<span class="p">●</span> Fail loudly, abort the turn
+  Log file, keep going
+  Write a custom response…
+  Discard this question
+
+<span class="d">Inject into current chat?</span> <span class="p">Yes</span> / No</pre>
+			</div>
+			<div class="spotlight-copy">
+				<p>
+					Agents love to interrupt you with questions. Duesentrieb doesn't. While you work, a second model
+					watches the conversation in the background and collects the questions that are worth asking but
+					not worth stopping for.
+				</p>
+				<p>
+					It deliberately hunts for the <em>meta</em> questions — "how should features like this generally be
+					implemented?", "which abstraction do you actually prefer?" — instead of nitpicks about the diff
+					currently in flight.
+				</p>
+				<p>
+					Run <code>/open-questions</code> whenever you feel like it. Each question comes with up to four
+					multiple-choice answers, plus an escape hatch to write your own or discard it outright. And nothing
+					touches your session behind your back: before an answer lands in the conversation, it asks whether
+					to inject it into the current chat.
+				</p>
+				<p>
+					Questions are deduplicated, capped, and collected without ever blocking a turn. Your flow stays
+					yours.
+				</p>
 			</div>
 		</div>
 
